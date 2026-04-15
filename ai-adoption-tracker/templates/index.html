@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Adoption Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="brand-icon">⬡</span>
+    <span class="brand-name">AI Pulse</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+    <button class="nav-tab" data-tab="discover">Discover</button>
+    <button class="nav-tab" data-tab="metrics">Metrics</button>
+    <button class="nav-tab" data-tab="submit">+ Submit</button>
+  </div>
+</nav>
+
+<!-- ── DASHBOARD TAB ─────────────────────────────────────────── -->
+<section id="tab-dashboard" class="tab-section active">
+  <div class="section-hero">
+    <div class="hero-text">
+      <h1>AI Use Cases <span class="accent">Across the Org</span></h1>
+      <p>Browse, filter and explore how teams are using AI to move faster.</p>
+    </div>
+    <div class="filter-bar">
+      <select id="filter-team" class="filter-select">
+        <option value="">All Teams</option>
+      </select>
+      <select id="filter-tool" class="filter-select">
+        <option value="">All Tools</option>
+      </select>
+      <select id="filter-impact" class="filter-select">
+        <option value="">All Impacts</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <button class="btn-reset" onclick="resetFilters()">Reset</button>
+    </div>
+  </div>
+  <div class="container">
+    <div id="dashboard-count" class="result-count"></div>
+    <div id="dashboard-grid" class="cards-grid"></div>
+  </div>
+</section>
+
+<!-- ── DISCOVER TAB ──────────────────────────────────────────── -->
+<section id="tab-discover" class="tab-section">
+  <div class="section-hero">
+    <div class="hero-text">
+      <h1>Discover <span class="accent">Ideas</span></h1>
+      <p>Search across all use cases. Find what other teams have built and reuse their ideas.</p>
+    </div>
+    <div class="search-bar-wrap">
+      <input id="search-input" type="text" class="search-input" placeholder="Search by title, tool, team, tag…" oninput="debounceSearch()" />
+      <span class="search-icon">⌕</span>
+    </div>
+  </div>
+  <div class="container">
+    <div id="discover-count" class="result-count"></div>
+    <div id="discover-grid" class="cards-grid"></div>
+  </div>
+</section>
+
+<!-- ── METRICS TAB ───────────────────────────────────────────── -->
+<section id="tab-metrics" class="tab-section">
+  <div class="section-hero">
+    <div class="hero-text">
+      <h1>Adoption <span class="accent">Metrics</span></h1>
+      <p>A live picture of how AI is growing across teams.</p>
+    </div>
+  </div>
+  <div class="container">
+    <div id="stat-cards" class="stat-row"></div>
+    <div class="metrics-grid">
+      <div class="metric-panel">
+        <h3 class="panel-title">Top AI Tools</h3>
+        <div id="tools-chart"></div>
+      </div>
+      <div class="metric-panel">
+        <h3 class="panel-title">Impact Distribution</h3>
+        <div id="impact-chart"></div>
+      </div>
+      <div class="metric-panel wide">
+        <h3 class="panel-title">Top Use Cases by Upvotes</h3>
+        <div id="top-cases-list"></div>
+      </div>
+      <div class="metric-panel">
+        <h3 class="panel-title">Teams Using AI</h3>
+        <div id="teams-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SUBMIT TAB ────────────────────────────────────────────── -->
+<section id="tab-submit" class="tab-section">
+  <div class="section-hero">
+    <div class="hero-text">
+      <h1>Submit a <span class="accent">Use Case</span></h1>
+      <p>Share how your team is using AI — help the org learn and grow together.</p>
+    </div>
+  </div>
+  <div class="container form-container">
+    <div id="form-success" class="form-success hidden">
+      <span class="success-icon">✓</span>
+      <p>Use case submitted! It's now live on the dashboard.</p>
+      <button class="btn-primary" onclick="switchTab('dashboard')">View Dashboard</button>
+    </div>
+    <form id="submit-form" class="submit-form" onsubmit="handleSubmit(event)">
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label>Title <span class="req">*</span></label>
+          <input type="text" id="f-title" required placeholder="E.g. Automated Release Notes" />
+        </div>
+        <div class="form-group">
+          <label>Your Name <span class="req">*</span></label>
+          <input type="text" id="f-name" required placeholder="Full name" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description <span class="req">*</span></label>
+        <textarea id="f-desc" required rows="4" placeholder="Describe what AI tool you used, how you used it, and what result you achieved."></textarea>
+      </div>
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label>Team <span class="req">*</span></label>
+          <input type="text" id="f-team" required placeholder="E.g. Platform Engineering" />
+        </div>
+        <div class="form-group">
+          <label>AI Tool Used <span class="req">*</span></label>
+          <input type="text" id="f-tool" required placeholder="E.g. GitHub Copilot, Claude, GPT-4" />
+        </div>
+      </div>
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label>Impact Level <span class="req">*</span></label>
+          <select id="f-impact" required>
+            <option value="">Select impact</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Category <span class="req">*</span></label>
+          <select id="f-category" required>
+            <option value="">Select category</option>
+            <option>Developer Productivity</option>
+            <option>Support Automation</option>
+            <option>Data & Analytics</option>
+            <option>HR & Recruiting</option>
+            <option>Marketing & Content</option>
+            <option>Finance & Ops</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tags <span class="hint">(comma-separated)</span></label>
+        <input type="text" id="f-tags" placeholder="e.g. automation, code-review, docs" />
+      </div>
+      <button type="submit" class="btn-primary btn-submit" id="submit-btn">
+        <span>Publish Use Case</span>
+        <span class="btn-arrow">→</span>
+      </button>
+    </form>
+  </div>
+</section>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

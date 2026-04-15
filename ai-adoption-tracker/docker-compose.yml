@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: ai-adoption-tracker
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist use case data between container restarts
+      - app_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+volumes:
+  app_data:
